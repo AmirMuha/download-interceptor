@@ -51,7 +51,7 @@ export function AiConfiguration({ onSuggestion }: AiConfigurationProps) {
       if (result.suggestedRule && !result.suggestedRule.startsWith('No suggestion')) {
         setSuggestedRule({
           sourceUrlPrefix: result.suggestedRule,
-          localFilePath: '/path/to/your/local/file.gguf', // Default placeholder
+          localFilePath: '/path/to/your/model.gguf', // Default placeholder
           ignoreQueryParams: true,
         });
         toast({
@@ -116,8 +116,8 @@ export function AiConfiguration({ onSuggestion }: AiConfigurationProps) {
                 <Input value={suggestedRule.sourceUrlPrefix} onChange={(e) => setSuggestedRule({...suggestedRule, sourceUrlPrefix: e.target.value})} className="font-code"/>
              </div>
              <div>
-                <Label>Local File Path</Label>
-                <Input value={suggestedRule.localFilePath} onChange={(e) => setSuggestedRule({...suggestedRule, localFilePath: e.target.value})} className="font-code" />
+                <Label>Local Path or Remote URL</Label>
+                <Input value={suggestedRule.localFilePath} onChange={(e) => setSuggestedRule({...suggestedRule, localFilePath: e.target.value})} className="font-code" placeholder="/path/to/model.gguf OR https://..." />
              </div>
              <div className="flex items-center justify-between rounded-lg border p-3 bg-card">
                 <div>

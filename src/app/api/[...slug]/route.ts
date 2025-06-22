@@ -19,31 +19,66 @@ async function handler(req: NextRequest) {
         return new NextResponse('No matching interception rule found.', { status: 404 });
     }
 
-    const localFilePath = matchingRule.localFilePath;
+    const location = matchingRule.localFilePath;
 
-    try {
-        const stats = await fs.promises.stat(localFilePath);
-        if (!stats.isFile()) {
-            throw new Error('Path is not a file');
+    // Check if the location is a remote URL
+    if (location.startsWith('http://') || location.startsWith('https://')) {
+        try {
+            const response = await fetch(location, { headers: { 'User-Agent': 'Local-Model-Interceptor/1.0' } });
+
+            if (!response.ok) {
+                throw new Error(`Failed to fetch: ${response.status} ${response.statusText}`);
+            }
+
+            await addLog({ requestUrl, servedFile: location, status: 'success' });
+            
+            const headers = new Headers();
+            headers.set('Content-Type', response.headers.get('Content-Type') || 'application/octet-stream');
+            if (response.headers.has('Content-Length')) {
+                 headers.set('Content-Length', response.headers.get('Content-Length')!);
+            }
+            try {
+                const filename = path.basename(new URL(location).pathname);
+                headers.set('Content-Disposition', `attachment; filename="${filename}"`);
+            } catch (e) {
+                // Ignore if URL is not well-formed for pathname extraction
+            }
+
+            return new NextResponse(response.body, {
+                status: 200,
+                headers: headers,
+            });
+        } catch (error) {
+            const errorMessage = (error as Error).message;
+            await addLog({ requestUrl, servedFile: `${location} (Fetch Error: ${errorMessage})`, status: 'error' });
+            return new NextResponse(`Error fetching from remote URL: ${location}`, { status: 502 });
         }
+    } else {
+        // Handle as a local file path
+        try {
+            const stats = await fs.promises.stat(location);
+            if (!stats.isFile()) {
+                throw new Error('Path is not a file');
+            }
 
-        const stream = fs.createReadStream(localFilePath);
-        const webStream = Readable.toWeb(stream) as ReadableStream<Uint8Array>;
+            const stream = fs.createReadStream(location);
+            const webStream = Readable.toWeb(stream) as ReadableStream<Uint8Array>;
 
-        await addLog({ requestUrl, servedFile: localFilePath, status: 'success' });
+            await addLog({ requestUrl, servedFile: location, status: 'success' });
 
-        return new NextResponse(webStream, {
-            status: 200,
-            headers: {
-                'Content-Type': 'application/octet-stream',
-                'Content-Length': String(stats.size),
-                'Content-Disposition': `attachment; filename="${path.basename(localFilePath)}"`,
-            },
-        });
-    } catch (error) {
-        const errorMessage = (error as Error).code === 'ENOENT' ? 'File not found' : 'Cannot read file';
-        await addLog({ requestUrl, servedFile: `${localFilePath} (${errorMessage})`, status: 'error' });
-        return new NextResponse(`${errorMessage} at: ${localFilePath}`, { status: 404 });
+            return new NextResponse(webStream, {
+                status: 200,
+                headers: {
+                    'Content-Type': 'application/octet-stream',
+                    'Content-Length': String(stats.size),
+                    'Content-Disposition': `attachment; filename="${path.basename(location)}"`,
+                },
+            });
+        } catch (error) {
+            const errorMessage = (error as Error).code === 'ENOENT' ? 'File not found' : 'Cannot read file';
+            await addLog({ requestUrl, servedFile: `${location} (${errorMessage})`, status: 'error' });
+            return new NextResponse(`${errorMessage} at: ${location}`, { status: 404 });
+        }
     }
 }
 

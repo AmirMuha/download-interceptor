@@ -15,7 +15,7 @@ import { Switch } from './ui/switch';
 const ruleSchema = z.object({
   id: z.string(),
   sourceUrlPrefix: z.string().url({ message: 'Please enter a valid URL prefix.' }),
-  localFilePath: z.string().min(1, { message: 'Local file path is required.' }),
+  localFilePath: z.string().min(1, { message: 'Local path or URL is required.' }),
   ignoreQueryParams: z.boolean().default(true),
 });
 
@@ -104,9 +104,9 @@ export function ConfigurationForm({ initialData, onSave, isLoading }: Configurat
                     name={`rules.${index}.localFilePath`}
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Local File Path</FormLabel>
+                        <FormLabel>Local Path or Remote URL</FormLabel>
                         <FormControl>
-                          <Input placeholder="/path/to/your/model.gguf" {...field} className="font-code" />
+                          <Input placeholder="/path/to/model.gguf OR https://..." {...field} className="font-code" />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
