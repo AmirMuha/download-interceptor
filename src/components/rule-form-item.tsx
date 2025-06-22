@@ -20,8 +20,18 @@ export function RuleFormItem({ form, index, remove }: RuleFormItemProps) {
   const fileInputRef = React.useRef<HTMLInputElement | null>(null);
 
   return (
-    <div className="p-4 border rounded-lg bg-card space-y-4 relative">
-      <div className="space-y-4">
+    <div className="relative rounded-lg border bg-card p-4">
+      <Button
+        type="button"
+        variant="ghost"
+        size="icon"
+        className="absolute right-2 top-2 h-8 w-8 text-muted-foreground hover:text-destructive"
+        onClick={() => remove(index)}
+      >
+        <Trash2 className="h-4 w-4" />
+        <span className="sr-only">Remove Rule</span>
+      </Button>
+      <div className="space-y-4 pr-8">
         <FormField
           control={form.control}
           name={`rules.${index}.sourceUrlPrefix`}
@@ -70,39 +80,27 @@ export function RuleFormItem({ form, index, remove }: RuleFormItemProps) {
             </FormItem>
           )}
         />
+        <FormField
+          control={form.control}
+          name={`rules.${index}.ignoreQueryParams`}
+          render={({ field }) => (
+            <FormItem className="flex flex-row items-center justify-between rounded-lg border bg-background p-3 shadow-sm">
+              <div className="space-y-0.5">
+                <FormLabel className="font-normal">Ignore Query Params</FormLabel>
+                <p className="text-xs text-muted-foreground">
+                  Match URL regardless of query parameters (e.g. `?X-Amz-..`). Recommended.
+                </p>
+              </div>
+              <FormControl>
+                <Switch
+                  checked={field.value}
+                  onCheckedChange={field.onChange}
+                />
+              </FormControl>
+            </FormItem>
+          )}
+        />
       </div>
-
-      <FormField
-        control={form.control}
-        name={`rules.${index}.ignoreQueryParams`}
-        render={({ field }) => (
-          <FormItem className="flex flex-row items-center justify-between rounded-lg border bg-background p-3 shadow-sm">
-            <div className="space-y-0.5">
-              <FormLabel className="font-normal">Ignore Query Params</FormLabel>
-              <p className="text-xs text-muted-foreground">
-                Match URL regardless of query parameters (e.g. `?X-Amz-..`). Recommended.
-              </p>
-            </div>
-            <FormControl>
-              <Switch
-                checked={field.value}
-                onCheckedChange={field.onChange}
-              />
-            </FormControl>
-          </FormItem>
-        )}
-      />
-
-      <Button
-        type="button"
-        variant="ghost"
-        size="icon"
-        className="absolute top-2 right-2 text-muted-foreground hover:text-destructive"
-        onClick={() => remove(index)}
-      >
-        <Trash2 className="h-4 w-4" />
-        <span className="sr-only">Remove Rule</span>
-      </Button>
     </div>
   );
 }
