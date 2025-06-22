@@ -5,7 +5,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Skeleton } from '@/components/ui/skeleton';
-import type { LogEntry } from '@/lib/logger';
+import type { LogEntry, HttpMethod } from '@/lib/logger';
 import { formatDistanceToNow } from 'date-fns';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/tooltip';
 
@@ -13,6 +13,7 @@ export function RequestLogs() {
   const [logs, setLogs] = useState<LogEntry[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
+  const [filterMethod, setFilterMethod] = useState<HttpMethod | 'All'>('All');
   const fetchLogs = useCallback(async () => {
     try {
       const response = await fetch('/api/logs');
@@ -33,8 +34,32 @@ export function RequestLogs() {
     return () => clearInterval(interval);
   }, [fetchLogs]);
 
+  const filteredLogs = logs.filter(log => {
+    if (filterMethod === 'All') {
+      return true;
+    }
+    return log.method === filterMethod;
+  });
+
   return (
     <ScrollArea className="h-[calc(100vh-22rem)] min-h-[20rem] rounded-md border">
+      <div className="p-4 border-b">
+        <Select onValueChange={(value: HttpMethod | 'All') => setFilterMethod(value)} defaultValue="All">
+          <SelectTrigger className="w-[180px]">
+            <SelectValue placeholder="Filter by Method" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="All">All Methods</SelectItem>
+            <SelectItem value="GET">GET</SelectItem>
+            <SelectItem value="POST">POST</SelectItem>
+            <SelectItem value="PUT">PUT</SelectItem>
+            <SelectItem value="DELETE">DELETE</SelectItem>
+            <SelectItem value="PATCH">PATCH</SelectItem>
+            <SelectItem value="OPTIONS">OPTIONS</SelectItem>
+            <SelectItem value="HEAD">HEAD</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
        <TooltipProvider>
         <Table>
           <TableHeader className="sticky top-0 bg-card z-10">
@@ -54,7 +79,7 @@ export function RequestLogs() {
                 </TableRow>
               ))
             ) : logs.length === 0 ? (
-              <TableRow>
+              <TableRow key="no-logs">
                 <TableCell colSpan={3} className="h-24 text-center text-muted-foreground">
                   No requests logged yet. Waiting for traffic...
                 </TableCell>
@@ -92,6 +117,7 @@ export function RequestLogs() {
                 </TableRow>
               ))
             )}
+
           </TableBody>
         </Table>
       </TooltipProvider>
