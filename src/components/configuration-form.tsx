@@ -13,6 +13,8 @@ import { RuleFormItem } from './rule-form-item';
 
 const ruleSchema = z.object({
   id: z.string(),
+  title: z.string().min(1, { message: 'Title is required.' }),
+  description: z.string().optional(),
   sourceUrlPrefix: z.string().url({ message: 'Please enter a valid URL prefix.' }),
   localFilePath: z.string().min(1, { message: 'Local path or URL is required.' }),
   ignoreQueryParams: z.boolean().default(true),
@@ -77,6 +79,18 @@ export function ConfigurationForm({ initialData, onSave, isLoading }: Configurat
     }
   };
 
+  const addRule = () => {
+    const newRuleNumber = fields.length + 1;
+    append({
+      id: Date.now().toString(),
+      title: `New Rule #${newRuleNumber}`,
+      description: "",
+      sourceUrlPrefix: '',
+      localFilePath: '',
+      ignoreQueryParams: true,
+    });
+  };
+
   if (isLoading) {
     return (
         <div className="flex items-center justify-center pt-8 h-64">
@@ -96,7 +110,6 @@ export function ConfigurationForm({ initialData, onSave, isLoading }: Configurat
                 key={field.id}
                 form={form}
                 index={index}
-                fieldId={field.id}
                 remove={remove}
               />
             ))
@@ -109,7 +122,7 @@ export function ConfigurationForm({ initialData, onSave, isLoading }: Configurat
         </div>
 
         <div className="grid grid-cols-2 gap-4 pt-2 border-t">
-            <Button type="button" variant="outline" onClick={() => append({ id: Date.now().toString(), sourceUrlPrefix: '', localFilePath: '', ignoreQueryParams: true })}>
+            <Button type="button" variant="outline" onClick={addRule}>
               <PlusCircle className="mr-2 h-4 w-4" />
               Add Rule
             </Button>

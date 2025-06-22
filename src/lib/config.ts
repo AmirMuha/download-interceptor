@@ -3,6 +3,8 @@ import path from 'path';
 
 export interface Rule {
   id: string;
+  title: string;
+  description?: string;
   sourceUrlPrefix: string;
   localFilePath: string;
   ignoreQueryParams?: boolean;
@@ -31,10 +33,12 @@ export async function getConfig(): Promise<Config> {
   try {
     const fileContent = await fs.readFile(configPath, 'utf-8');
     const config = JSON.parse(fileContent) as Config;
-    // Set default for ignoreQueryParams if not present
-    config.rules = config.rules.map(rule => ({
-      ignoreQueryParams: true,
+    // Set defaults for backward compatibility
+    config.rules = config.rules.map((rule, index) => ({
       ...rule,
+      title: rule.title || `Untitled Rule #${index + 1}`,
+      description: rule.description || '',
+      ignoreQueryParams: rule.ignoreQueryParams !== undefined ? rule.ignoreQueryParams : true,
     }));
     return config;
   } catch (error) {

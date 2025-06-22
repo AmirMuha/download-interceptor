@@ -11,6 +11,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/
 import type { Rule } from '@/lib/config';
 import { Switch } from './ui/switch';
 import { Alert, AlertDescription, AlertTitle } from './ui/alert';
+import { Textarea } from './ui/textarea';
 
 interface AiConfigurationProps {
   onSuggestion: (suggestion: Omit<Rule, 'id'>) => void;
@@ -53,6 +54,8 @@ export function AiConfiguration({ onSuggestion }: AiConfigurationProps) {
       const result = await analyzeLogFile(logContent);
       if (result.suggestedRule && !result.suggestedRule.startsWith('No suggestion')) {
         setSuggestedRule({
+          title: `AI Suggestion from ${fileName}`,
+          description: `Intercepts URLs starting with ${result.suggestedRule}`,
           sourceUrlPrefix: result.suggestedRule,
           localFilePath: 'your-model.gguf', // Default placeholder
           ignoreQueryParams: true,
@@ -129,6 +132,14 @@ export function AiConfiguration({ onSuggestion }: AiConfigurationProps) {
             <CardDescription>Review and modify the AI suggestion below.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
+             <div>
+                <Label>Title</Label>
+                <Input value={suggestedRule.title} onChange={(e) => setSuggestedRule(prev => prev ? {...prev, title: e.target.value} : null)} />
+             </div>
+             <div>
+                <Label>Description (Optional)</Label>
+                <Textarea value={suggestedRule.description} onChange={(e) => setSuggestedRule(prev => prev ? {...prev, description: e.target.value} : null)} />
+             </div>
              <div>
                 <Label>URL Prefix</Label>
                 <Input value={suggestedRule.sourceUrlPrefix} onChange={(e) => setSuggestedRule(prev => prev ? {...prev, sourceUrlPrefix: e.target.value} : null)} className="font-code"/>

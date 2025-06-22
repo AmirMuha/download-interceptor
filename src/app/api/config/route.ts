@@ -6,6 +6,8 @@ const configSchema = z.object({
   rules: z.array(
     z.object({
       id: z.string(),
+      title: z.string().min(1, { message: 'Title is required.' }),
+      description: z.string().optional(),
       sourceUrlPrefix: z.string().url(),
       localFilePath: z.string().min(1, { message: "Local path or URL is required." }),
       ignoreQueryParams: z.boolean().optional(),
