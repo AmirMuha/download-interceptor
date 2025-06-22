@@ -51,7 +51,7 @@ export function AiConfiguration({ onSuggestion }: AiConfigurationProps) {
       if (result.suggestedRule && !result.suggestedRule.startsWith('No suggestion')) {
         setSuggestedRule({
           sourceUrlPrefix: result.suggestedRule,
-          localFilePath: '/path/to/your/model.gguf', // Default placeholder
+          localFilePath: 'your-model.gguf', // Default placeholder
           ignoreQueryParams: true,
         });
         toast({
@@ -117,7 +117,7 @@ export function AiConfiguration({ onSuggestion }: AiConfigurationProps) {
              </div>
              <div>
                 <Label>Local Path or Remote URL</Label>
-                <Input value={suggestedRule.localFilePath} onChange={(e) => setSuggestedRule({...suggestedRule, localFilePath: e.target.value})} className="font-code" placeholder="/path/to/model.gguf OR https://..." />
+                <Input value={suggestedRule.localFilePath} onChange={(e) => setSuggestedRule({...suggestedRule, localFilePath: e.target.value})} className="font-code" placeholder="File name, server path, or remote URL" />
              </div>
              <div className="flex items-center justify-between rounded-lg border p-3 bg-card">
                 <div>

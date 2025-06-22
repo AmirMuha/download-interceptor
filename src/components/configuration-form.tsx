@@ -5,7 +5,7 @@ import { useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { Button } from '@/components/ui/button';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Trash2, PlusCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
@@ -31,6 +31,8 @@ interface ConfigurationFormProps {
 
 export function ConfigurationForm({ initialData, onSave, isLoading }: ConfigurationFormProps) {
   const { toast } = useToast();
+  const fileInputRefs = React.useRef<Record<string, HTMLInputElement | null>>({});
+
   const form = useForm<Config>({
     resolver: zodResolver(configSchema),
     values: initialData,
@@ -102,12 +104,36 @@ export function ConfigurationForm({ initialData, onSave, isLoading }: Configurat
                   <FormField
                     control={form.control}
                     name={`rules.${index}.localFilePath`}
-                    render={({ field }) => (
+                    render={({ field: formField }) => (
                       <FormItem>
                         <FormLabel>Local Path or Remote URL</FormLabel>
-                        <FormControl>
-                          <Input placeholder="/path/to/model.gguf OR https://..." {...field} className="font-code" />
-                        </FormControl>
+                        <div className="flex items-center gap-2">
+                            <FormControl>
+                                <Input placeholder="e.g., my-model.gguf" {...formField} className="font-code" />
+                            </FormControl>
+                            <input
+                                type="file"
+                                className="hidden"
+                                ref={(el) => {
+                                fileInputRefs.current[field.id] = el;
+                                }}
+                                onChange={(e) => {
+                                if (e.target.files?.[0]) {
+                                    form.setValue(`rules.${index}.localFilePath`, e.target.files[0].name);
+                                }
+                                }}
+                            />
+                            <Button
+                                type="button"
+                                variant="outline"
+                                onClick={() => fileInputRefs.current[field.id]?.click()}
+                            >
+                                Browse
+                            </Button>
+                        </div>
+                        <FormDescription>
+                            Provide a file name (must be in project root), an absolute server path, or a remote URL.
+                        </FormDescription>
                         <FormMessage />
                       </FormItem>
                     )}

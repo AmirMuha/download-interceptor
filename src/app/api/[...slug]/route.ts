@@ -55,13 +55,14 @@ async function handler(req: NextRequest) {
         }
     } else {
         // Handle as a local file path
+        const resolvedPath = path.resolve(process.cwd(), location);
         try {
-            const stats = await fs.promises.stat(location);
+            const stats = await fs.promises.stat(resolvedPath);
             if (!stats.isFile()) {
                 throw new Error('Path is not a file');
             }
 
-            const stream = fs.createReadStream(location);
+            const stream = fs.createReadStream(resolvedPath);
             const webStream = Readable.toWeb(stream) as ReadableStream<Uint8Array>;
 
             await addLog({ requestUrl, servedFile: location, status: 'success' });
