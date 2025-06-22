@@ -87,7 +87,9 @@ export default function Home() {
           <Card className="h-full">
             <CardHeader>
               <CardTitle>Configuration</CardTitle>
-              <CardDescription>Define rules to intercept and redirect download requests.</CardDescription>
+              <CardDescription>
+                Define rules to intercept and redirect download requests. Changes are saved to <code className="font-code bg-muted px-1 py-0.5 rounded text-sm">config.json</code>.
+              </CardDescription>
             </CardHeader>
             <CardContent>
               <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as ActiveTab)}>
