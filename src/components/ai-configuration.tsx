@@ -9,7 +9,7 @@ import { analyzeLogFile } from '@/actions/analyze-log';
 import { Wand2, Loader2, FileText } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import type { Rule } from '@/lib/config';
-import { Switch } from './ui/switch';
+import { Switch } from '/home/runner/work/firebase-genkit-studio/firebase-genkit-studio/src/components/ui/switch';
 import { Alert, AlertDescription, AlertTitle } from './ui/alert';
 import { Textarea } from './ui/textarea';
 
@@ -24,6 +24,8 @@ export function AiConfiguration({ onSuggestion }: AiConfigurationProps) {
   const [fileName, setFileName] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
+
+  const [apiKey, setApiKey] = useState('');
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -102,6 +104,25 @@ export function AiConfiguration({ onSuggestion }: AiConfigurationProps) {
 
   return (
     <div className="space-y-4 pt-4">
+      <Card>
+        <CardHeader>
+          <CardTitle>AI Service Configuration</CardTitle>
+          <CardDescription>Configure settings for integrating with AI services.</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-2">
+          <Label htmlFor="api-key">AI Service API Key</Label>
+          <Input
+            id="api-key"
+            type="password"
+            placeholder="Enter your API key"
+            value={apiKey}
+            onChange={(e) => setApiKey(e.target.value)}
+          />
+        </CardContent>
+        <CardFooter>
+          <Button className="w-full">Save Configuration</Button>
+        </CardFooter>
+      </Card>
       <Alert>
         <FileText className="h-4 w-4" />
         <AlertTitle>Analyze Logs for Suggestions</AlertTitle>
