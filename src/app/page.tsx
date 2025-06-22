@@ -10,16 +10,22 @@ import { AiConfiguration } from '@/components/ai-configuration';
 import { RequestLogs } from '@/components/request-logs';
 import type { Config, Rule } from '@/lib/config';
 
+type ActiveTab = "manual" | "ai";
+
 export default function Home() {
   const [config, setConfig] = useState<Config>({ rules: [] });
   const [isLoading, setIsLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState<ActiveTab>("manual");
 
   const fetchConfig = async () => {
+    setIsLoading(true);
     try {
       const response = await fetch('/api/config');
       if (response.ok) {
         const data = await response.json();
         setConfig(data);
+      } else {
+        console.error("Failed to fetch config:", response.statusText);
       }
     } catch (error) {
       console.error("Failed to fetch config:", error);
@@ -32,6 +38,14 @@ export default function Home() {
     fetchConfig();
   }, []);
 
+  const handleSuggestion = (rule: Omit<Rule, 'id'>) => {
+    const newRule: Rule = { id: Date.now().toString(), ...rule };
+    const updatedConfig = { ...config, rules: [...config.rules, newRule] };
+    setConfig(updatedConfig);
+    // Switch to manual tab to show the new rule added
+    setActiveTab("manual");
+  };
+
   return (
     <main className="container mx-auto p-4 md:p-8">
       <header className="flex items-center gap-4 mb-8">
@@ -39,8 +53,8 @@ export default function Home() {
           <Replace className="h-8 w-8 text-primary" />
         </div>
         <div>
-          <h1 className="text-3xl font-bold font-headline text-foreground">Local Model Interceptor</h1>
-          <p className="text-muted-foreground">Intercept download requests and serve files locally.</p>
+          <h1 className="text-3xl font-bold tracking-tight text-foreground">Local Model Interceptor</h1>
+          <p className="text-muted-foreground">Intercept download requests and serve files locally or from remote URLs.</p>
         </div>
       </header>
       
@@ -48,7 +62,7 @@ export default function Home() {
         <Info className="h-4 w-4" />
         <AlertTitle>How It Works</AlertTitle>
         <AlertDescription>
-          This tool serves local files for specific URL patterns. To intercept requests from an application (like Ollama), you must configure that application or your system to redirect traffic for the target URLs to this server. A common method is editing your system's <code className="font-code bg-muted px-1 py-0.5 rounded text-sm">hosts</code> file to point a domain to <code className="font-code bg-muted px-1 py-0.5 rounded text-sm">127.0.0.1</code>.
+          This tool intercepts requests matching a URL prefix and serves a different file in its place. To intercept requests from an application (e.g., an LLM client), you may need to point the relevant domain to <code className="font-code bg-muted px-1 py-0.5 rounded text-sm">127.0.0.1</code> in your system's <code className="font-code bg-muted px-1 py-0.5 rounded text-sm">hosts</code> file.
         </AlertDescription>
       </Alert>
 
@@ -57,10 +71,10 @@ export default function Home() {
           <Card className="h-full">
             <CardHeader>
               <CardTitle>Configuration</CardTitle>
-              <CardDescription>Manage interception rules.</CardDescription>
+              <CardDescription>Define rules to intercept and redirect download requests.</CardDescription>
             </CardHeader>
             <CardContent>
-              <Tabs defaultValue="manual">
+              <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as ActiveTab)}>
                 <TabsList className="grid w-full grid-cols-2">
                   <TabsTrigger value="manual">Manual</TabsTrigger>
                   <TabsTrigger value="ai">AI Assisted</TabsTrigger>
@@ -69,13 +83,7 @@ export default function Home() {
                    <ConfigurationForm initialData={config} onSave={fetchConfig} isLoading={isLoading} />
                 </TabsContent>
                 <TabsContent value="ai">
-                  <AiConfiguration onSuggestion={(rule) => {
-                    const newRule: Rule = { id: Date.now().toString(), ...rule };
-                    const updatedConfig = { ...config, rules: [...config.rules, newRule] };
-                    setConfig(updatedConfig);
-                    // Switch to manual tab to show the new rule added
-                    // This requires controlling the Tabs component state, for now user can switch manually
-                  }} />
+                  <AiConfiguration onSuggestion={handleSuggestion} />
                 </TabsContent>
               </Tabs>
             </CardContent>
@@ -85,7 +93,7 @@ export default function Home() {
           <Card className="h-full">
             <CardHeader>
               <CardTitle>Request Logs</CardTitle>
-              <CardDescription>Live feed of intercepted requests.</CardDescription>
+              <CardDescription>View a live feed of intercepted requests and their status.</CardDescription>
             </CardHeader>
             <CardContent>
               <RequestLogs />

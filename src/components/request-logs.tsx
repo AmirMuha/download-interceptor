@@ -7,6 +7,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { LogEntry } from '@/lib/logger';
 import { formatDistanceToNow } from 'date-fns';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/tooltip';
 
 export function RequestLogs() {
   const [logs, setLogs] = useState<LogEntry[]>([]);
@@ -33,47 +34,67 @@ export function RequestLogs() {
   }, [fetchLogs]);
 
   return (
-    <ScrollArea className="h-[450px] rounded-md border">
-      <Table>
-        <TableHeader className="sticky top-0 bg-card z-10">
-          <TableRow>
-            <TableHead className="w-[100px]">Status</TableHead>
-            <TableHead>Request URL</TableHead>
-            <TableHead>Time</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {isLoading ? (
-            Array.from({ length: 5 }).map((_, i) => (
-              <TableRow key={i}>
-                <TableCell><Skeleton className="h-6 w-16" /></TableCell>
-                <TableCell><Skeleton className="h-4 w-full" /></TableCell>
-                <TableCell><Skeleton className="h-4 w-24" /></TableCell>
-              </TableRow>
-            ))
-          ) : logs.length === 0 ? (
+    <ScrollArea className="h-[calc(100vh-22rem)] min-h-[20rem] rounded-md border">
+       <TooltipProvider>
+        <Table>
+          <TableHeader className="sticky top-0 bg-card z-10">
             <TableRow>
-              <TableCell colSpan={3} className="h-24 text-center text-muted-foreground">
-                No requests logged yet. Waiting for traffic...
-              </TableCell>
+              <TableHead className="w-[100px]">Status</TableHead>
+              <TableHead>Request URL</TableHead>
+              <TableHead className="text-right">Time</TableHead>
             </TableRow>
-          ) : (
-            logs.map((log) => (
-              <TableRow key={log.id}>
-                <TableCell>
-                  <Badge variant={log.status === 'success' ? 'default' : 'destructive'} className={log.status === 'success' ? 'bg-accent text-accent-foreground' : ''}>
-                    {log.status}
-                  </Badge>
-                </TableCell>
-                <TableCell className="font-code text-xs truncate max-w-xs" title={log.requestUrl}>{log.requestUrl}</TableCell>
-                <TableCell className="text-muted-foreground text-xs" title={new Date(log.timestamp).toLocaleString()}>
-                  {formatDistanceToNow(new Date(log.timestamp), { addSuffix: true })}
+          </TableHeader>
+          <TableBody>
+            {isLoading ? (
+              Array.from({ length: 5 }).map((_, i) => (
+                <TableRow key={i}>
+                  <TableCell><Skeleton className="h-6 w-16" /></TableCell>
+                  <TableCell><Skeleton className="h-4 w-full" /></TableCell>
+                  <TableCell><Skeleton className="h-4 w-24 ml-auto" /></TableCell>
+                </TableRow>
+              ))
+            ) : logs.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={3} className="h-24 text-center text-muted-foreground">
+                  No requests logged yet. Waiting for traffic...
                 </TableCell>
               </TableRow>
-            ))
-          )}
-        </TableBody>
-      </Table>
+            ) : (
+              logs.map((log) => (
+                <TableRow key={log.id}>
+                  <TableCell>
+                    <Badge variant={log.status === 'success' ? 'default' : 'destructive'} className={log.status === 'success' ? 'bg-accent text-accent-foreground' : ''}>
+                      {log.status}
+                    </Badge>
+                  </TableCell>
+                  <TableCell className="font-code text-xs">
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                            <p className="truncate max-w-xs md:max-w-sm">{log.requestUrl}</p>
+                        </TooltipTrigger>
+                        <TooltipContent side="top" align="start">
+                            <p>{log.requestUrl}</p>
+                        </TooltipContent>
+                    </Tooltip>
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                            <span className="text-muted-foreground text-xs">
+                                {formatDistanceToNow(new Date(log.timestamp), { addSuffix: true })}
+                            </span>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                            <p>{new Date(log.timestamp).toLocaleString()}</p>
+                        </TooltipContent>
+                    </Tooltip>
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
+          </TableBody>
+        </Table>
+      </TooltipProvider>
     </ScrollArea>
   );
 }

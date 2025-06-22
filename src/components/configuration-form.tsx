@@ -5,12 +5,11 @@ import { useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { Button } from '@/components/ui/button';
-import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
-import { Trash2, PlusCircle } from 'lucide-react';
+import { Form } from '@/components/ui/form';
+import { PlusCircle, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import type { Config, Rule } from '@/lib/config';
-import { Switch } from './ui/switch';
+import type { Config } from '@/lib/config';
+import { RuleFormItem } from './rule-form-item';
 
 const ruleSchema = z.object({
   id: z.string(),
@@ -31,7 +30,6 @@ interface ConfigurationFormProps {
 
 export function ConfigurationForm({ initialData, onSave, isLoading }: ConfigurationFormProps) {
   const { toast } = useToast();
-  const fileInputRefs = React.useRef<Record<string, HTMLInputElement | null>>({});
 
   const form = useForm<Config>({
     resolver: zodResolver(configSchema),
@@ -59,121 +57,69 @@ export function ConfigurationForm({ initialData, onSave, isLoading }: Configurat
       });
 
       if (!response.ok) {
-        throw new Error('Failed to save configuration');
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to save configuration');
       }
       
       toast({
         title: 'Success!',
         description: 'Your configuration has been saved.',
       });
+      form.reset(data); // Resets form to new state, clearing "dirty" status
       onSave();
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Could not save configuration.';
       toast({
         variant: 'destructive',
         title: 'Uh oh! Something went wrong.',
-        description: 'Could not save configuration.',
+        description: errorMessage,
       });
     }
   };
 
   if (isLoading) {
-    return <p>Loading configuration...</p>
+    return (
+        <div className="flex items-center justify-center pt-8 h-64">
+            <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+            <p className="ml-2">Loading configuration...</p>
+        </div>
+    );
   }
 
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 pt-4">
-        <div className="space-y-4 max-h-96 overflow-y-auto pr-2">
-          {fields.map((field, index) => (
-            <div key={field.id} className="p-4 border rounded-lg bg-card space-y-4">
-              <div className="flex justify-between items-start gap-4">
-                <div className="space-y-4 flex-grow">
-                  <FormField
-                    control={form.control}
-                    name={`rules.${index}.sourceUrlPrefix`}
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>URL Prefix to Intercept</FormLabel>
-                        <FormControl>
-                          <Input placeholder="https://example.com/models/" {...field} className="font-code" />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name={`rules.${index}.localFilePath`}
-                    render={({ field: formField }) => (
-                      <FormItem>
-                        <FormLabel>Local Path or Remote URL</FormLabel>
-                        <div className="flex items-center gap-2">
-                            <FormControl>
-                                <Input placeholder="e.g., my-model.gguf" {...formField} className="font-code flex-1" />
-                            </FormControl>
-                            <input
-                                type="file"
-                                className="hidden"
-                                ref={(el) => {
-                                fileInputRefs.current[field.id] = el;
-                                }}
-                                onChange={(e) => {
-                                if (e.target.files?.[0]) {
-                                    form.setValue(`rules.${index}.localFilePath`, e.target.files[0].name);
-                                }
-                                }}
-                            />
-                            <Button
-                                type="button"
-                                variant="outline"
-                                onClick={() => fileInputRefs.current[field.id]?.click()}
-                            >
-                                Browse
-                            </Button>
-                        </div>
-                        <FormDescription>
-                            Provide a file name (must be in project root), an absolute server path, or a remote URL.
-                        </FormDescription>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-                <Button type="button" variant="ghost" size="icon" className="flex-shrink-0 text-muted-foreground hover:text-destructive" onClick={() => remove(index)}>
-                  <Trash2 className="h-4 w-4" />
-                </Button>
-              </div>
-              <FormField
-                control={form.control}
-                name={`rules.${index}.ignoreQueryParams`}
-                render={({ field }) => (
-                  <FormItem className="flex flex-row items-center justify-between rounded-lg border bg-background p-3 shadow-sm">
-                    <div>
-                      <FormLabel className="font-normal">Ignore Query Params</FormLabel>
-                       <p className="text-xs text-muted-foreground">
-                        Match URL regardless of query parameters (e.g. `?X-Amz-..`).
-                      </p>
-                    </div>
-                    <FormControl>
-                      <Switch
-                        checked={field.value}
-                        onCheckedChange={field.onChange}
-                      />
-                    </FormControl>
-                  </FormItem>
-                )}
+        <div className="space-y-4 max-h-[28rem] min-h-[10rem] overflow-y-auto pr-2 -mr-2">
+          {fields.length > 0 ? (
+            fields.map((field, index) => (
+              <RuleFormItem 
+                key={field.id}
+                form={form}
+                index={index}
+                fieldId={field.id}
+                remove={remove}
               />
-            </div>
-          ))}
+            ))
+          ) : (
+             <div className="text-center text-muted-foreground p-8 border-dashed border-2 rounded-lg flex flex-col items-center justify-center h-full">
+                <p>No rules configured.</p>
+                <p className="text-sm">Click "Add Rule" to begin.</p>
+             </div>
+          )}
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-2 gap-4 pt-2 border-t">
             <Button type="button" variant="outline" onClick={() => append({ id: Date.now().toString(), sourceUrlPrefix: '', localFilePath: '', ignoreQueryParams: true })}>
               <PlusCircle className="mr-2 h-4 w-4" />
               Add Rule
             </Button>
-            <Button type="submit" disabled={form.formState.isSubmitting}>
-              {form.formState.isSubmitting ? 'Saving...' : 'Save Configuration'}
+            <Button type="submit" disabled={form.formState.isSubmitting || !form.formState.isDirty}>
+              {form.formState.isSubmitting ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Saving...
+                </>
+              ) : 'Save Changes'}
             </Button>
         </div>
       </form>

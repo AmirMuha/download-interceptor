@@ -6,10 +6,11 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { analyzeLogFile } from '@/actions/analyze-log';
-import { Wand2, Loader2 } from 'lucide-react';
+import { Wand2, Loader2, FileText } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import type { Rule } from '@/lib/config';
 import { Switch } from './ui/switch';
+import { Alert, AlertDescription, AlertTitle } from './ui/alert';
 
 interface AiConfigurationProps {
   onSuggestion: (suggestion: Omit<Rule, 'id'>) => void;
@@ -19,6 +20,7 @@ export function AiConfiguration({ onSuggestion }: AiConfigurationProps) {
   const [logContent, setLogContent] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [suggestedRule, setSuggestedRule] = useState<Omit<Rule, 'id'> | null>(null);
+  const [fileName, setFileName] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
@@ -28,6 +30,7 @@ export function AiConfiguration({ onSuggestion }: AiConfigurationProps) {
       const reader = new FileReader();
       reader.onload = (e) => {
         setLogContent(e.target?.result as string);
+        setFileName(file.name);
       };
       reader.readAsText(file);
     }
@@ -38,7 +41,7 @@ export function AiConfiguration({ onSuggestion }: AiConfigurationProps) {
       toast({
         variant: 'destructive',
         title: 'No log content',
-        description: 'Please upload or paste a log file content.',
+        description: 'Please upload a log file to analyze.',
       });
       return;
     }
@@ -56,7 +59,7 @@ export function AiConfiguration({ onSuggestion }: AiConfigurationProps) {
         });
         toast({
           title: 'Suggestion Ready!',
-          description: 'AI has generated a rule suggestion.',
+          description: 'An AI-generated rule is ready for your review.',
         });
       } else {
         toast({
@@ -66,10 +69,11 @@ export function AiConfiguration({ onSuggestion }: AiConfigurationProps) {
         });
       }
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred.';
       toast({
         variant: 'destructive',
         title: 'Analysis Failed',
-        description: 'An error occurred while analyzing the log file.',
+        description: errorMessage,
       });
     } finally {
       setIsLoading(false);
@@ -81,18 +85,32 @@ export function AiConfiguration({ onSuggestion }: AiConfigurationProps) {
       onSuggestion(suggestedRule);
       toast({
         title: 'Rule Added',
-        description: 'The suggested rule has been added to the form. Please review and save.',
+        description: 'The suggestion has been added to the Manual tab. Review and save your changes.',
       });
-      setSuggestedRule(null); // Clear suggestion after adding
+      setSuggestedRule(null);
+      setLogContent('');
+      setFileName('');
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
     }
   };
 
 
   return (
     <div className="space-y-4 pt-4">
+      <Alert>
+        <FileText className="h-4 w-4" />
+        <AlertTitle>Analyze Logs for Suggestions</AlertTitle>
+        <AlertDescription>
+          Upload a log file from your application (e.g., Ollama logs) that contains model download URLs. The AI will attempt to create a rule for you.
+        </AlertDescription>
+      </Alert>
+
       <div className="space-y-2">
         <Label htmlFor="log-file">Upload Log File</Label>
-        <Input id="log-file" type="file" ref={fileInputRef} onChange={handleFileChange} />
+        <Input id="log-file" type="file" ref={fileInputRef} onChange={handleFileChange} accept=".log,.txt" />
+        {fileName && <p className="text-sm text-muted-foreground">Loaded: {fileName}</p>}
       </div>
       
       <Button onClick={handleAnalyze} disabled={isLoading || !logContent} className="w-full">
@@ -105,28 +123,28 @@ export function AiConfiguration({ onSuggestion }: AiConfigurationProps) {
       </Button>
 
       {suggestedRule && (
-        <Card className="mt-4 bg-primary/5 border-primary/20">
+        <Card className="mt-4 bg-primary/5 border-primary/20 animate-in fade-in">
           <CardHeader>
             <CardTitle className="text-lg">Suggested Rule</CardTitle>
-            <CardDescription>AI analysis result. Edit before adding.</CardDescription>
+            <CardDescription>Review and modify the AI suggestion below.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
              <div>
                 <Label>URL Prefix</Label>
-                <Input value={suggestedRule.sourceUrlPrefix} onChange={(e) => setSuggestedRule({...suggestedRule, sourceUrlPrefix: e.target.value})} className="font-code"/>
+                <Input value={suggestedRule.sourceUrlPrefix} onChange={(e) => setSuggestedRule(prev => prev ? {...prev, sourceUrlPrefix: e.target.value} : null)} className="font-code"/>
              </div>
              <div>
                 <Label>Local Path or Remote URL</Label>
-                <Input value={suggestedRule.localFilePath} onChange={(e) => setSuggestedRule({...suggestedRule, localFilePath: e.target.value})} className="font-code" placeholder="File name, server path, or remote URL" />
+                <Input value={suggestedRule.localFilePath} onChange={(e) => setSuggestedRule(prev => prev ? {...prev, localFilePath: e.target.value} : null)} className="font-code" placeholder="File name, server path, or remote URL" />
              </div>
              <div className="flex items-center justify-between rounded-lg border p-3 bg-card">
-                <div>
+                <div className="space-y-0.5">
                   <Label>Ignore Query Params</Label>
                   <p className="text-xs text-muted-foreground">Recommended for signed URLs.</p>
                 </div>
                 <Switch
-                  checked={suggestedRule.ignoreQueryParams}
-                  onCheckedChange={(checked) => setSuggestedRule({...suggestedRule, ignoreQueryParams: checked})}
+                  checked={!!suggestedRule.ignoreQueryParams}
+                  onCheckedChange={(checked) => setSuggestedRule(prev => prev ? {...prev, ignoreQueryParams: checked} : null)}
                 />
               </div>
             <Button onClick={handleAddRule} className="w-full">Add Rule to Configuration</Button>
