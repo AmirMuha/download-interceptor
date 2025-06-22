@@ -62,13 +62,23 @@ export default function Home() {
         <Info className="h-4 w-4" />
         <AlertTitle>How It Works</AlertTitle>
         <AlertDescription>
-          This tool intercepts requests by acting as a proxy. To use it, prepend the original download URL with this server&apos;s address (e.g., <code className="font-code bg-muted px-1 py-0.5 rounded text-sm">http://localhost:9002/</code>).
+           Since you can&apos;t change URLs in your application&apos;s source code, the best way to intercept requests is to configure your system to use this tool as an HTTP proxy. This directs your application&apos;s (e.g., Ollama) network traffic through the interceptor without any code changes.
           <br/><br/>
-          For example, to intercept <code className="font-code bg-muted px-1 py-0.5 rounded text-sm break-all">https://example.com/model.gguf</code>, your application should request:
+          <strong>Set up your proxy in your terminal before running your application:</strong>
+          <br/><br/>
+          <strong className="text-foreground">On macOS or Linux:</strong>
           <br/>
-          <code className="block mt-1 font-code bg-muted px-2 py-1 rounded text-sm overflow-x-auto">http://localhost:9002/https://example.com/model.gguf</code>
+          <code className="block mt-1 font-code bg-muted px-2 py-1 rounded text-sm overflow-x-auto">export HTTPS_PROXY=http://localhost:9002</code>
           <br/><br/>
-          If a configured rule matches the URL, the specified local or remote file is served. If not, the request is transparently proxied to the original URL. This method does not require editing your system&apos;s <code className="font-code bg-muted px-1 py-0.5 rounded text-sm">hosts</code> file.
+          <strong className="text-foreground">On Windows (Command Prompt):</strong>
+          <br/>
+          <code className="block mt-1 font-code bg-muted px-2 py-1 rounded text-sm overflow-x-auto">set HTTPS_PROXY=http://localhost:9002</code>
+          <br/><br/>
+          <strong className="text-foreground">On Windows (PowerShell):</strong>
+          <br/>
+          <code className="block mt-1 font-code bg-muted px-2 py-1 rounded text-sm overflow-x-auto">$env:HTTPS_PROXY="http://localhost:9002"</code>
+          <br/><br/>
+          After setting this, run your application (e.g., <code className="font-code bg-muted px-1 py-0.5 rounded text-sm">ollama pull...</code>) in the <strong>same terminal session</strong>. Its download requests will now be processed by the rules you configure below.
         </AlertDescription>
       </Alert>
 
