@@ -62,7 +62,13 @@ export default function Home() {
         <Info className="h-4 w-4" />
         <AlertTitle>How It Works</AlertTitle>
         <AlertDescription>
-          This tool intercepts requests matching a URL prefix and serves a different file in its place. To intercept requests from an application (e.g., an LLM client), you may need to point the relevant domain to <code className="font-code bg-muted px-1 py-0.5 rounded text-sm">127.0.0.1</code> in your system's <code className="font-code bg-muted px-1 py-0.5 rounded text-sm">hosts</code> file.
+          This tool intercepts requests by acting as a proxy. To use it, prepend the original download URL with this server&apos;s address (e.g., <code className="font-code bg-muted px-1 py-0.5 rounded text-sm">http://localhost:9002/</code>).
+          <br/><br/>
+          For example, to intercept <code className="font-code bg-muted px-1 py-0.5 rounded text-sm break-all">https://example.com/model.gguf</code>, your application should request:
+          <br/>
+          <code className="block mt-1 font-code bg-muted px-2 py-1 rounded text-sm overflow-x-auto">http://localhost:9002/https://example.com/model.gguf</code>
+          <br/><br/>
+          If a configured rule matches the URL, the specified local or remote file is served. If not, the request is transparently proxied to the original URL. This method does not require editing your system&apos;s <code className="font-code bg-muted px-1 py-0.5 rounded text-sm">hosts</code> file.
         </AlertDescription>
       </Alert>
 
