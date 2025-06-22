@@ -50,7 +50,7 @@ export function AiConfiguration({ onSuggestion }: AiConfigurationProps) {
       if (result.suggestedRule && !result.suggestedRule.startsWith('No suggestion')) {
         setSuggestedRule({
           sourceUrlPrefix: result.suggestedRule,
-          localDirectory: '/your/local/path/here', // Default placeholder
+          localFilePath: '/path/to/your/local/file.gguf', // Default placeholder
         });
         toast({
           title: 'Suggestion Ready!',
@@ -114,8 +114,8 @@ export function AiConfiguration({ onSuggestion }: AiConfigurationProps) {
                 <Input value={suggestedRule.sourceUrlPrefix} onChange={(e) => setSuggestedRule({...suggestedRule, sourceUrlPrefix: e.target.value})} className="font-code"/>
              </div>
              <div>
-                <Label>Local Directory</Label>
-                <Input value={suggestedRule.localDirectory} onChange={(e) => setSuggestedRule({...suggestedRule, localDirectory: e.target.value})} className="font-code" />
+                <Label>Local File Path</Label>
+                <Input value={suggestedRule.localFilePath} onChange={(e) => setSuggestedRule({...suggestedRule, localFilePath: e.target.value})} className="font-code" />
              </div>
             <Button onClick={handleAddRule} className="w-full">Add Rule to Configuration</Button>
           </CardContent>

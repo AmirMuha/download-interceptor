@@ -7,7 +7,7 @@ const configSchema = z.object({
     z.object({
       id: z.string(),
       sourceUrlPrefix: z.string().url(),
-      localDirectory: z.string(),
+      localFilePath: z.string().min(1, { message: "Local file path is required." }),
     })
   ),
 });

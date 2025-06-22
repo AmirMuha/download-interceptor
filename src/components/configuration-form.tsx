@@ -14,7 +14,7 @@ import type { Config, Rule } from '@/lib/config';
 const ruleSchema = z.object({
   id: z.string(),
   sourceUrlPrefix: z.string().url({ message: 'Please enter a valid URL prefix.' }),
-  localDirectory: z.string().min(1, { message: 'Local directory path is required.' }),
+  localFilePath: z.string().min(1, { message: 'Local file path is required.' }),
 });
 
 const configSchema = z.object({
@@ -98,12 +98,12 @@ export function ConfigurationForm({ initialData, onSave, isLoading }: Configurat
                 />
                 <FormField
                   control={form.control}
-                  name={`rules.${index}.localDirectory`}
+                  name={`rules.${index}.localFilePath`}
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Local Directory Path</FormLabel>
+                      <FormLabel>Local File Path</FormLabel>
                       <FormControl>
-                        <Input placeholder="/path/to/your/models" {...field} className="font-code" />
+                        <Input placeholder="/path/to/your/model.gguf" {...field} className="font-code" />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -117,7 +117,7 @@ export function ConfigurationForm({ initialData, onSave, isLoading }: Configurat
           ))}
         </div>
 
-        <Button type="button" variant="outline" onClick={() => append({ id: Date.now().toString(), sourceUrlPrefix: '', localDirectory: '' })}>
+        <Button type="button" variant="outline" onClick={() => append({ id: Date.now().toString(), sourceUrlPrefix: '', localFilePath: '' })}>
           <PlusCircle className="mr-2 h-4 w-4" />
           Add Rule
         </Button>

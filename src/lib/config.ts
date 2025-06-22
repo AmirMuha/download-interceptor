@@ -4,7 +4,7 @@ import path from 'path';
 export interface Rule {
   id: string;
   sourceUrlPrefix: string;
-  localDirectory: string;
+  localFilePath: string;
 }
 
 export interface Config {

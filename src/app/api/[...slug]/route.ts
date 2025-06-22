@@ -16,21 +16,7 @@ async function handler(req: NextRequest) {
         return new NextResponse('No matching interception rule found.', { status: 404 });
     }
 
-    const pathSuffix = requestUrl.substring(matchingRule.sourceUrlPrefix.length);
-    const decodedPathSuffix = decodeURIComponent(pathSuffix);
-    
-    // Normalize to prevent directory traversal attacks using encoded characters.
-    const safePathSuffix = path.normalize(decodedPathSuffix).replace(/^(\.\.(\/|\\|$))+/, '');
-    const localFilePath = path.join(matchingRule.localDirectory, safePathSuffix);
-
-    // Security check: Ensure the resolved path is within the intended directory.
-    const resolvedBaseDir = path.resolve(matchingRule.localDirectory);
-    const resolvedFilePath = path.resolve(localFilePath);
-    
-    if (!resolvedFilePath.startsWith(resolvedBaseDir)) {
-        await addLog({ requestUrl, servedFile: `Forbidden: ${localFilePath}`, status: 'error' });
-        return new NextResponse('Forbidden: Access denied.', { status: 403 });
-    }
+    const localFilePath = matchingRule.localFilePath;
 
     try {
         const stats = await fs.promises.stat(localFilePath);
