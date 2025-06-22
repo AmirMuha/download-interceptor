@@ -27,8 +27,9 @@ export async function analyzeLogFile(logContent: string): Promise<AnalysisResult
   if (match && match[0]) {
     try {
       const url = new URL(match[0]);
-      // Suggest the URL prefix up to the last slash.
-      const suggestedRule = url.href.substring(0, url.href.lastIndexOf('/') + 1);
+      // Suggest the URL prefix up to the last slash, ignoring query parameters.
+      const pathOnly = `${url.origin}${url.pathname}`;
+      const suggestedRule = pathOnly.substring(0, pathOnly.lastIndexOf('/') + 1);
       return { suggestedRule };
     } catch (error) {
        return { suggestedRule: "Could not parse a valid URL from logs." };

@@ -9,7 +9,10 @@ async function handler(req: NextRequest) {
     const config = await getConfig();
     const requestUrl = req.url;
 
-    const matchingRule = config.rules.find(rule => requestUrl.startsWith(rule.sourceUrlPrefix));
+    const matchingRule = config.rules.find(rule => {
+        const urlToCompare = rule.ignoreQueryParams ? requestUrl.split('?')[0] : requestUrl;
+        return urlToCompare.startsWith(rule.sourceUrlPrefix);
+    });
 
     if (!matchingRule) {
         await addLog({ requestUrl, servedFile: 'N/A - No matching rule', status: 'error' });

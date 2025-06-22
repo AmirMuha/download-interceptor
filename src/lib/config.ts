@@ -5,6 +5,7 @@ export interface Rule {
   id: string;
   sourceUrlPrefix: string;
   localFilePath: string;
+  ignoreQueryParams?: boolean;
 }
 
 export interface Config {
@@ -29,7 +30,13 @@ export async function getConfig(): Promise<Config> {
   await ensureConfigFile();
   try {
     const fileContent = await fs.readFile(configPath, 'utf-8');
-    return JSON.parse(fileContent) as Config;
+    const config = JSON.parse(fileContent) as Config;
+    // Set default for ignoreQueryParams if not present
+    config.rules = config.rules.map(rule => ({
+      ignoreQueryParams: true,
+      ...rule,
+    }));
+    return config;
   } catch (error) {
     console.error('Error reading config file, returning default config:', error);
     return defaultConfig;

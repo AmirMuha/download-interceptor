@@ -10,11 +10,13 @@ import { Input } from '@/components/ui/input';
 import { Trash2, PlusCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import type { Config, Rule } from '@/lib/config';
+import { Switch } from './ui/switch';
 
 const ruleSchema = z.object({
   id: z.string(),
   sourceUrlPrefix: z.string().url({ message: 'Please enter a valid URL prefix.' }),
   localFilePath: z.string().min(1, { message: 'Local file path is required.' }),
+  ignoreQueryParams: z.boolean().default(true),
 });
 
 const configSchema = z.object({
@@ -81,43 +83,65 @@ export function ConfigurationForm({ initialData, onSave, isLoading }: Configurat
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 pt-4">
         <div className="space-y-4 max-h-96 overflow-y-auto pr-2">
           {fields.map((field, index) => (
-            <div key={field.id} className="p-4 border rounded-lg bg-background flex justify-between items-start gap-4">
-              <div className="space-y-4 flex-grow">
-                <FormField
-                  control={form.control}
-                  name={`rules.${index}.sourceUrlPrefix`}
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>URL Prefix to Intercept</FormLabel>
-                      <FormControl>
-                        <Input placeholder="https://example.com/models/" {...field} className="font-code" />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name={`rules.${index}.localFilePath`}
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Local File Path</FormLabel>
-                      <FormControl>
-                        <Input placeholder="/path/to/your/model.gguf" {...field} className="font-code" />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+            <div key={field.id} className="p-4 border rounded-lg bg-card space-y-4">
+              <div className="flex justify-between items-start gap-4">
+                <div className="space-y-4 flex-grow">
+                  <FormField
+                    control={form.control}
+                    name={`rules.${index}.sourceUrlPrefix`}
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>URL Prefix to Intercept</FormLabel>
+                        <FormControl>
+                          <Input placeholder="https://example.com/models/" {...field} className="font-code" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name={`rules.${index}.localFilePath`}
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Local File Path</FormLabel>
+                        <FormControl>
+                          <Input placeholder="/path/to/your/model.gguf" {...field} className="font-code" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+                <Button type="button" variant="ghost" size="icon" className="flex-shrink-0 text-muted-foreground hover:text-destructive" onClick={() => remove(index)}>
+                  <Trash2 className="h-4 w-4" />
+                </Button>
               </div>
-              <Button type="button" variant="ghost" size="icon" className="flex-shrink-0 text-muted-foreground hover:text-destructive" onClick={() => remove(index)}>
-                <Trash2 className="h-4 w-4" />
-              </Button>
+              <FormField
+                control={form.control}
+                name={`rules.${index}.ignoreQueryParams`}
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-center justify-between rounded-lg border bg-background p-3 shadow-sm">
+                    <div>
+                      <FormLabel className="font-normal">Ignore Query Params</FormLabel>
+                       <p className="text-xs text-muted-foreground">
+                        Match URL regardless of query parameters (e.g. `?X-Amz-..`).
+                      </p>
+                    </div>
+                    <FormControl>
+                      <Switch
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
             </div>
           ))}
         </div>
 
-        <Button type="button" variant="outline" onClick={() => append({ id: Date.now().toString(), sourceUrlPrefix: '', localFilePath: '' })}>
+        <Button type="button" variant="outline" onClick={() => append({ id: Date.now().toString(), sourceUrlPrefix: '', localFilePath: '', ignoreQueryParams: true })}>
           <PlusCircle className="mr-2 h-4 w-4" />
           Add Rule
         </Button>

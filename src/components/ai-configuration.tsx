@@ -9,6 +9,7 @@ import { analyzeLogFile } from '@/actions/analyze-log';
 import { Wand2, Loader2 } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import type { Rule } from '@/lib/config';
+import { Switch } from './ui/switch';
 
 interface AiConfigurationProps {
   onSuggestion: (suggestion: Omit<Rule, 'id'>) => void;
@@ -51,6 +52,7 @@ export function AiConfiguration({ onSuggestion }: AiConfigurationProps) {
         setSuggestedRule({
           sourceUrlPrefix: result.suggestedRule,
           localFilePath: '/path/to/your/local/file.gguf', // Default placeholder
+          ignoreQueryParams: true,
         });
         toast({
           title: 'Suggestion Ready!',
@@ -117,6 +119,16 @@ export function AiConfiguration({ onSuggestion }: AiConfigurationProps) {
                 <Label>Local File Path</Label>
                 <Input value={suggestedRule.localFilePath} onChange={(e) => setSuggestedRule({...suggestedRule, localFilePath: e.target.value})} className="font-code" />
              </div>
+             <div className="flex items-center justify-between rounded-lg border p-3 bg-card">
+                <div>
+                  <Label>Ignore Query Params</Label>
+                  <p className="text-xs text-muted-foreground">Recommended for signed URLs.</p>
+                </div>
+                <Switch
+                  checked={suggestedRule.ignoreQueryParams}
+                  onCheckedChange={(checked) => setSuggestedRule({...suggestedRule, ignoreQueryParams: checked})}
+                />
+              </div>
             <Button onClick={handleAddRule} className="w-full">Add Rule to Configuration</Button>
           </CardContent>
         </Card>
