@@ -81,34 +81,36 @@ export function ConfigurationForm({ initialData, onSave, isLoading }: Configurat
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 pt-4">
         <div className="space-y-4 max-h-96 overflow-y-auto pr-2">
           {fields.map((field, index) => (
-            <div key={field.id} className="p-4 border rounded-lg space-y-4 relative bg-background">
-               <FormField
-                control={form.control}
-                name={`rules.${index}.sourceUrlPrefix`}
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>URL Prefix to Intercept</FormLabel>
-                    <FormControl>
-                      <Input placeholder="https://example.com/models/" {...field} className="font-code" />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name={`rules.${index}.localDirectory`}
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Local Directory Path</FormLabel>
-                    <FormControl>
-                      <Input placeholder="/path/to/your/models" {...field} className="font-code" />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <Button type="button" variant="ghost" size="icon" className="absolute top-2 right-2 text-muted-foreground hover:text-destructive" onClick={() => remove(index)}>
+            <div key={field.id} className="p-4 border rounded-lg bg-background flex justify-between items-start gap-4">
+              <div className="space-y-4 flex-grow">
+                <FormField
+                  control={form.control}
+                  name={`rules.${index}.sourceUrlPrefix`}
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>URL Prefix to Intercept</FormLabel>
+                      <FormControl>
+                        <Input placeholder="https://example.com/models/" {...field} className="font-code" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name={`rules.${index}.localDirectory`}
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Local Directory Path</FormLabel>
+                      <FormControl>
+                        <Input placeholder="/path/to/your/models" {...field} className="font-code" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+              <Button type="button" variant="ghost" size="icon" className="flex-shrink-0 text-muted-foreground hover:text-destructive" onClick={() => remove(index)}>
                 <Trash2 className="h-4 w-4" />
               </Button>
             </div>
