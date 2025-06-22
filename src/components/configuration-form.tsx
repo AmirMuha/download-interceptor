@@ -109,7 +109,7 @@ export function ConfigurationForm({ initialData, onSave, isLoading }: Configurat
                         <FormLabel>Local Path or Remote URL</FormLabel>
                         <div className="flex items-center gap-2">
                             <FormControl>
-                                <Input placeholder="e.g., my-model.gguf" {...formField} className="font-code" />
+                                <Input placeholder="e.g., my-model.gguf" {...formField} className="font-code flex-1" />
                             </FormControl>
                             <input
                                 type="file"
